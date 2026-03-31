@@ -1,27 +1,25 @@
 {
   "project": "Odoo-POS-Terminal",
-  "repo": "AliMora83/odoo-pos-terminal",
+  "repo": "AliMora83/Odoo-POS-Terminal",
   "branch": "main",
-  "stack": "TypeScript / Next.js / Tailwind",
+  "stack": "Python / Odoo / Raspberry Pi / Thermal Printer / RFID",
   "status": "Active",
   "priority": 2,
   "priority_label": "🟡 Priority 2 — Active Development",
-  "progress_percent": 50,
-  "progress_label": "Development in progress",
-  "current_phase": "Phase 1",
-  "next_step": "See Master.md",
+  "progress_percent": 25,
+  "progress_label": "Hardware drivers validated · Odoo sync in development",
+  "current_phase": "Phase 2 — Odoo Integration",
+  "next_step": "Implement robust XML-RPC sync engine with offline queue support",
   "blocker": null,
   "live_url": null,
-  "deploy_target": "Hostinger VPS",
-  "agents": [
-    "AG"
-  ],
+  "deploy_target": "Raspberry Pi (Embedded Linux)",
+  "agents": ["Antigravity"],
   "version": "0.0.0",
   "last_push": {
-    "timestamp": "2026-03-31T22:13:56.310Z",
+    "timestamp": "2026-03-31T22:16:38Z",
     "actor": "AliMora83",
-    "commit_message": "chore: implement MACP documentation and sync infrastructure",
-    "sha": "6e5fafa"
+    "commit_message": "chore: bootstrap project-sync metadata",
+    "sha": "4530d72"
   },
   "last_updated": "2026-03-31"
 }
