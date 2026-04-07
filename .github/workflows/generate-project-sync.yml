@@ -4,7 +4,6 @@ on:
   push:
     branches:
       - main
-      - master
 
 permissions:
   contents: write
@@ -28,25 +27,26 @@ jobs:
           COMMIT_MSG="${{ github.event.head_commit.message }}"
           SHORT_SHA="${{ github.sha }}"
           SHORT_SHA="${SHORT_SHA:0:7}"
-          VERSION=$(grep -oP 'Version: \K[0-9]+\.[0-9]+\.[0-9]+' Master.md 2>/dev/null || echo "0.0.0")
+          VERSION=$(grep -oP 'Version: \K[0-9]+\.[0-9]+\.[0-9]+' docs/Master.md 2>/dev/null || echo "1.0.2")
 
           cat > PROJECT-SYNC.json << ENDJSON
           {
-            "project": "Odoo-POS-Terminal",
+            "project": "Odoo POS Terminal",
             "repo": "AliMora83/Odoo-POS-Terminal",
             "branch": "main",
-            "stack": "Python / Odoo / Raspberry Pi / Thermal Printer / RFID",
-            "status": "Active",
-            "priority": 2,
-            "priority_label": "🟡 Priority 2 — Active Development",
-            "progress_percent": 25,
-            "progress_label": "Hardware drivers validated · Odoo sync in development",
+            "stack": ["ESP32", "FreeRTOS", "FastAPI", "Antigravity", "Odoo JSON-RPC", "Python", "EasyEDA", "PCBWay PCBA"],
+            "status": "In Progress",
+            "priority": 1,
+            "priority_label": "🔴 Priority 1 — Ship Now",
+            "progress_percent": 20,
+            "progress_label": "Hardware drivers validated · Odoo integration starting",
             "current_phase": "Phase 2 — Odoo Integration",
-            "next_step": "Implement robust XML-RPC sync engine with offline queue support",
-            "blocker": null,
-            "live_url": null,
-            "deploy_target": "Raspberry Pi (Embedded Linux)",
-            "agents": ["Antigravity"],
+            "next_step": "Build Antigravity endpoint POST /terminal/order → simulate ESP32 with Python/Postman → confirm POS order in Odoo",
+            "blocker": "Payment acquiring entity / PSP licence unresolved",
+            "live_url": "https://namka.cloud",
+            "deploy_target": "Hostinger VPS (Antigravity FastAPI) · Odoo.sh (POS + Accounting) · PCBWay (PCBA)",
+            "agents": ["Claude", "AG", "Comet"],
+            "macp_version": "2.0",
             "version": "$VERSION",
             "last_push": {
               "timestamp": "$TIMESTAMP",
