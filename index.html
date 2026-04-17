@@ -1,0 +1,458 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Rugged Odoo POS Terminal — Africa Edition</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;700;800&family=Space+Mono:wght@400;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+  :root {
+    --bg:#F7F5F0; --surface:#FFFFFF; --surface2:#F0EDE6; --border:#E2DDD4; --border2:#CCC8BC;
+    --amber:#D4891A; --amber-lt:#FEF3DC; --amber-md:#F5C26B;
+    --teal:#0A8F72; --teal-lt:#DCF5EE; --teal-mid:#5CC9A9;
+    --red:#C0392B; --red-lt:#FDECEB;
+    --text:#1A1814; --text2:#4A4640; --muted:#8A8480;
+    --mono:'Space Mono',monospace; --display:'Syne',sans-serif; --body:'Inter',sans-serif;
+  }
+  *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+  html{scroll-behavior:smooth}
+  body{background:var(--bg);color:var(--text);font-family:var(--body);font-size:16px;line-height:1.7;overflow-x:hidden}
+  body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(rgba(212,137,26,.05) 1px,transparent 1px),linear-gradient(90deg,rgba(212,137,26,.05) 1px,transparent 1px);background-size:44px 44px;pointer-events:none;z-index:0}
+
+  /* NAV */
+  nav{position:fixed;top:0;left:0;right:0;z-index:100;display:flex;align-items:center;justify-content:space-between;padding:1rem 3rem;background:rgba(247,245,240,.93);backdrop-filter:blur(14px);border-bottom:1px solid var(--border)}
+  .nav-logo{font-family:var(--mono);font-size:.7rem;color:var(--amber);letter-spacing:.12em;text-transform:uppercase}
+  .nav-links{display:flex;gap:2rem;list-style:none}
+  .nav-links a{font-family:var(--mono);font-size:.62rem;color:var(--muted);text-decoration:none;letter-spacing:.08em;text-transform:uppercase;transition:color .2s}
+  .nav-links a:hover{color:var(--amber)}
+
+  /* LAYOUT */
+  .wrap{position:relative;z-index:1;max-width:1160px;margin:0 auto;padding:0 3rem}
+  section{padding:6rem 0}
+  hr.rule{position:relative;z-index:1;border:none;border-top:1px solid var(--border);margin:0 3rem}
+
+  /* TYPE */
+  .lbl{font-family:var(--mono);font-size:.6rem;letter-spacing:.2em;text-transform:uppercase;color:var(--amber);margin-bottom:1.4rem;display:flex;align-items:center;gap:.75rem}
+  .lbl::after{content:'';display:block;width:32px;height:1px;background:var(--amber-md)}
+  h1,h2,h3{font-family:var(--display);line-height:1.08}
+
+  /* HERO */
+  .hero{min-height:100vh;display:flex;flex-direction:column;justify-content:center;padding-top:8rem;padding-bottom:5rem;border-bottom:1px solid var(--border);overflow:hidden;position:relative}
+  .hero-ghost{position:absolute;right:-1rem;top:50%;transform:translateY(-50%);font-family:var(--display);font-size:clamp(7rem,17vw,18rem);font-weight:800;color:transparent;-webkit-text-stroke:1.5px rgba(212,137,26,.10);pointer-events:none;user-select:none;white-space:nowrap}
+  .hero-eye{font-family:var(--mono);font-size:.68rem;color:var(--amber);letter-spacing:.2em;text-transform:uppercase;margin-bottom:1.8rem;animation:up .6s ease both}
+  .hero h1{font-size:clamp(3rem,7vw,6.5rem);font-weight:800;max-width:860px;margin-bottom:1.8rem;animation:up .65s .1s ease both}
+  .hero h1 em{font-style:normal;color:var(--amber)}
+  .hero-sub{font-size:1.05rem;color:var(--text2);max-width:520px;margin-bottom:3.5rem;font-weight:300;animation:up .65s .2s ease both}
+  .crisis-row{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--border);border:1px solid var(--border);animation:up .65s .3s ease both}
+  .crisis-item{background:var(--surface);padding:2rem;transition:background .25s}
+  .crisis-item:hover{background:var(--amber-lt)}
+  .crisis-num{font-family:var(--mono);font-size:2rem;font-weight:700;color:var(--red);opacity:.22;line-height:1;margin-bottom:.6rem}
+  .crisis-title{font-family:var(--display);font-size:1rem;font-weight:700;margin-bottom:.4rem}
+  .crisis-desc{font-size:.84rem;color:var(--muted);line-height:1.6}
+
+  /* SOLUTION */
+  .sol-grid{display:grid;grid-template-columns:1fr 1fr;gap:4rem;align-items:start;margin-top:3rem}
+  .sol-text h2{font-size:clamp(2rem,3.5vw,3rem);font-weight:800;margin-bottom:1.4rem}
+  .sol-text h2 span{color:var(--amber)}
+  .sol-text p{color:var(--text2);font-size:.97rem;line-height:1.8;margin-bottom:.9rem;font-weight:300}
+  .arch{background:var(--text);padding:2rem;font-family:var(--mono);font-size:.75rem;line-height:1.9;color:#aaa}
+  .arch::before{content:'// SYSTEM ARCHITECTURE';display:block;color:var(--amber);font-size:.6rem;letter-spacing:.15em;margin-bottom:1.4rem}
+  .a-layer{border:1px solid #333;padding:.9rem 1.1rem;margin:.5rem 0;position:relative}
+  .a-layer.hw{border-color:rgba(0,201,167,.4)} .a-layer.mw{border-color:rgba(212,137,26,.4)} .a-layer.erp{border-color:rgba(192,57,43,.35)}
+  .a-lbl{position:absolute;top:-.55rem;left:.8rem;background:var(--text);padding:0 .4rem;font-size:.55rem;letter-spacing:.15em;text-transform:uppercase}
+  .hw .a-lbl{color:#00C9A7} .mw .a-lbl{color:var(--amber)} .erp .a-lbl{color:#E8453C}
+  .a-arr{text-align:center;font-size:.9rem;margin:.2rem 0;opacity:.4;color:#666}
+  .a-chips{display:flex;gap:.4rem;flex-wrap:wrap;margin-top:.4rem}
+  .a-chip{font-size:.6rem;padding:.15rem .5rem;border:1px solid #333;color:#888}
+  .stack-list{border:1px solid var(--border);margin-top:1px}
+  .stack-item{display:flex;align-items:center;gap:1rem;padding:.85rem 1.1rem;border-bottom:1px solid var(--border);font-size:.82rem;background:var(--surface)}
+  .stack-item:last-child{border-bottom:none}
+  .s-tag{font-family:var(--mono);font-size:.58rem;color:var(--amber);background:var(--amber-lt);border:1px solid var(--amber-md);padding:.18rem .5rem;text-transform:uppercase;letter-spacing:.1em;white-space:nowrap;min-width:72px;text-align:center}
+  .s-name{color:var(--text);font-weight:500} .s-role{color:var(--muted);margin-left:auto;font-size:.76rem}
+
+  /* UVP */
+  .uvp-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--border);margin-top:3rem;border:1px solid var(--border)}
+  .uvp-card{background:var(--surface);padding:2.5rem 2rem;transition:background .25s}
+  .uvp-card:hover{background:var(--amber-lt)}
+  .uvp-icon{font-family:var(--mono);font-size:1.8rem;font-weight:700;margin-bottom:1.2rem;display:block;line-height:1}
+  .uvp-card:nth-child(1) .uvp-icon{color:var(--teal)} .uvp-card:nth-child(2) .uvp-icon{color:var(--amber)} .uvp-card:nth-child(3) .uvp-icon{color:var(--red)}
+  .uvp-title{font-family:var(--display);font-size:1.15rem;font-weight:700;margin-bottom:.6rem}
+  .uvp-stat{font-family:var(--mono);font-size:.6rem;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);margin-bottom:.8rem}
+  .uvp-desc{font-size:.87rem;color:var(--text2);line-height:1.7}
+
+  /* BMC */
+  .bmc-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:1px;background:var(--border);margin-top:3rem;border:1px solid var(--border)}
+  .bmc-cell{background:var(--surface);padding:1.5rem 1.2rem}
+  .bmc-cell.wide{grid-column:span 2}
+  .bmc-lbl{font-family:var(--mono);font-size:.57rem;letter-spacing:.15em;text-transform:uppercase;color:var(--amber);margin-bottom:1rem}
+  .bmc-ul{list-style:none;display:flex;flex-direction:column;gap:.45rem}
+  .bmc-ul li{font-size:.82rem;color:var(--text2);padding-left:.8rem;position:relative;line-height:1.5}
+  .bmc-ul li::before{content:'›';position:absolute;left:0;color:var(--amber)}
+
+  /* ECONOMICS */
+  .econ-grid{display:grid;grid-template-columns:1fr 1fr;gap:1px;background:var(--border);margin-top:3rem}
+  .econ-panel{background:var(--surface);padding:2.5rem}
+  .econ-plbl{font-family:var(--mono);font-size:.6rem;letter-spacing:.18em;text-transform:uppercase;margin-bottom:2rem}
+  .econ-panel.costs .econ-plbl{color:var(--red)} .econ-panel.rev .econ-plbl{color:var(--teal)}
+  .econ-row{display:flex;justify-content:space-between;align-items:baseline;padding:.85rem 0;border-bottom:1px solid var(--border);font-size:.9rem}
+  .econ-row:last-child{border-bottom:none}
+  .econ-lbl{color:var(--text2);font-weight:300}
+  .econ-val{font-family:var(--mono);font-weight:700;font-size:.95rem}
+  .econ-panel.costs .econ-val{color:var(--red)} .econ-panel.rev .econ-val{color:var(--teal)}
+  .payback{margin-top:2rem;padding:1.5rem 2rem;background:var(--amber-lt);border:1px solid var(--amber-md);display:flex;align-items:center;justify-content:space-between;gap:2rem}
+  .pb-lbl{font-family:var(--mono);font-size:.6rem;color:var(--amber);letter-spacing:.15em;text-transform:uppercase;margin-bottom:.3rem}
+  .pb-val{font-family:var(--display);font-size:2.5rem;font-weight:800;color:var(--amber);line-height:1}
+  .pb-desc{font-size:.82rem;color:var(--text2);max-width:340px;line-height:1.6}
+
+  /* FINANCIALS */
+  .fin-intro{font-size:1rem;color:var(--text2);max-width:640px;margin-top:.5rem;margin-bottom:3rem;font-weight:300;line-height:1.8}
+  .fin-table-wrap{overflow-x:auto;border:1px solid var(--border);margin-bottom:2.5rem;border-radius:2px}
+  table{width:100%;border-collapse:collapse;font-size:.87rem;min-width:700px}
+  thead{background:var(--text);color:#fff}
+  thead th{padding:1rem 1.2rem;text-align:left;font-family:var(--mono);font-size:.58rem;letter-spacing:.12em;text-transform:uppercase;font-weight:700}
+  thead th:first-child{color:var(--amber-md)} thead th:not(:first-child){text-align:right}
+  tbody tr{border-bottom:1px solid var(--border);transition:background .2s}
+  tbody tr:hover{background:var(--amber-lt)}
+  tbody td{padding:.9rem 1.2rem;color:var(--text2)}
+  tbody td:not(:first-child){text-align:right;font-family:var(--mono);font-size:.83rem}
+  tbody td:first-child{font-weight:500;color:var(--text)}
+  .tg{color:var(--teal)!important;font-weight:700!important}
+  .tr{color:var(--red)!important}
+  .ta{color:var(--amber)!important;font-weight:700!important}
+  tr.sub{background:var(--surface2)}
+  tr.sub td{font-weight:600;font-family:var(--mono);font-size:.82rem}
+  tr.tot{background:var(--text)}
+  tr.tot td{color:#fff!important;font-family:var(--mono);font-weight:700}
+  tr.tot td.tg{color:var(--amber-md)!important}
+  .fin-charts{display:grid;grid-template-columns:1fr 1fr;gap:1px;background:var(--border);border:1px solid var(--border)}
+  .chart-panel{background:var(--surface);padding:2rem}
+  .cp-lbl{font-family:var(--mono);font-size:.6rem;letter-spacing:.15em;text-transform:uppercase;color:var(--amber);margin-bottom:1.5rem}
+  .chart-wrap{position:relative;height:260px}
+
+  /* SUBSCRIPTIONS */
+  .sub-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--border);margin-top:3rem;border:1px solid var(--border)}
+  .sub-card{background:var(--surface);padding:2.5rem}
+  .sub-card.hi{background:var(--amber-lt)}
+  .sub-ms{font-family:var(--mono);font-size:.58rem;letter-spacing:.15em;text-transform:uppercase;color:var(--muted);margin-bottom:1.4rem}
+  .sub-n{font-family:var(--display);font-size:3.5rem;font-weight:800;line-height:1;color:var(--amber);margin-bottom:.2rem}
+  .sub-nl{font-family:var(--mono);font-size:.62rem;color:var(--muted);letter-spacing:.1em;margin-bottom:1.4rem}
+  .sub-ml{font-family:var(--mono);font-size:.58rem;color:var(--teal);letter-spacing:.14em;text-transform:uppercase;margin-bottom:.2rem}
+  .sub-mrr{font-family:var(--display);font-size:1.8rem;font-weight:700;color:var(--teal)}
+  .sub-d{font-size:.82rem;color:var(--text2);margin-top:1rem;line-height:1.6}
+
+  /* ROADMAP */
+  .phases{margin-top:3rem;border:1px solid var(--border)}
+  .phase{display:grid;grid-template-columns:210px 1fr;border-bottom:1px solid var(--border)}
+  .phase:last-child{border-bottom:none}
+  .ph-meta{padding:2.5rem;border-right:1px solid var(--border);background:var(--surface2)}
+  .ph-num{font-family:var(--mono);font-size:.58rem;letter-spacing:.2em;text-transform:uppercase;margin-bottom:.6rem}
+  .phase:nth-child(1) .ph-num{color:var(--teal)} .phase:nth-child(2) .ph-num{color:var(--amber)} .phase:nth-child(3) .ph-num{color:var(--red)}
+  .ph-name{font-family:var(--display);font-size:1.05rem;font-weight:700;line-height:1.3;margin-bottom:.4rem}
+  .ph-time{font-family:var(--mono);font-size:.63rem;color:var(--muted);margin-top:.4rem}
+  .ph-body{padding:2.5rem;background:var(--surface)}
+  .ph-items{list-style:none;display:grid;grid-template-columns:1fr 1fr;gap:.65rem}
+  .ph-items li{font-size:.84rem;color:var(--text2);padding-left:1rem;position:relative;line-height:1.5}
+  .ph-items li::before{content:'—';position:absolute;left:0}
+  .phase:nth-child(1) .ph-items li::before{color:var(--teal)} .phase:nth-child(2) .ph-items li::before{color:var(--amber)} .phase:nth-child(3) .ph-items li::before{color:var(--red)}
+
+  /* HARDWARE */
+  .img-hero{border:1px solid var(--border);overflow:hidden;margin-top:2.5rem}
+  .img-hero img{width:100%;display:block}
+  .img-cap{background:var(--surface2);border-top:1px solid var(--border);padding:1.1rem 1.5rem;display:flex;align-items:center;justify-content:space-between}
+  .ic-lbl{font-family:var(--mono);font-size:.62rem;color:var(--amber);letter-spacing:.14em;text-transform:uppercase}
+  .ic-desc{font-size:.8rem;color:var(--muted)}
+  .grp-cards{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--border);border:1px solid var(--border);border-top:none}
+  .grp-card{background:var(--surface);padding:2rem}
+  .grp-tag{font-family:var(--mono);font-size:.58rem;letter-spacing:.15em;text-transform:uppercase;margin-bottom:.9rem}
+  .grp-card:nth-child(1) .grp-tag{color:var(--teal)} .grp-card:nth-child(2) .grp-tag{color:var(--amber)} .grp-card:nth-child(3) .grp-tag{color:var(--red)}
+  .grp-title{font-family:var(--display);font-size:1rem;font-weight:700;margin-bottom:.2rem}
+  .grp-sub{font-size:.73rem;color:var(--muted);margin-bottom:1.1rem;font-family:var(--mono)}
+  .grp-ul{list-style:none;display:flex;flex-direction:column;gap:.4rem}
+  .grp-ul li{font-size:.82rem;color:var(--text2);padding-left:.8rem;position:relative}
+  .grp-ul li::before{content:'›';position:absolute;left:0}
+  .grp-card:nth-child(1) .grp-ul li::before{color:var(--teal)} .grp-card:nth-child(2) .grp-ul li::before{color:var(--amber)} .grp-card:nth-child(3) .grp-ul li::before{color:var(--red)}
+
+  /* FOOTER */
+  footer{position:relative;z-index:1;border-top:1px solid var(--border);padding:2rem 3rem;display:flex;align-items:center;justify-content:space-between;background:var(--surface)}
+  .f-brand{font-family:var(--mono);font-size:.68rem;color:var(--muted);letter-spacing:.09em}
+  .f-brand span{color:var(--amber)}
+  .f-note{font-family:var(--mono);font-size:.62rem;color:var(--border2)}
+
+  @keyframes up{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+
+  @media(max-width:900px){
+    .wrap{padding:0 1.5rem} nav{padding:1rem 1.5rem} .nav-links{display:none}
+    hr.rule{margin:0 1.5rem}
+    .crisis-row,.uvp-grid,.sub-grid,.grp-cards{grid-template-columns:1fr}
+    .sol-grid,.econ-grid,.fin-charts{grid-template-columns:1fr}
+    .bmc-grid{grid-template-columns:1fr} .bmc-cell.wide{grid-column:span 1}
+    .phase{grid-template-columns:1fr} .ph-meta{border-right:none;border-bottom:1px solid var(--border)} .ph-items{grid-template-columns:1fr}
+    footer{flex-direction:column;gap:1rem;text-align:center}
+    .payback{flex-direction:column}
+  }
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="nav-logo">NAMKA.CLOUD / POS TERMINAL</div>
+  <ul class="nav-links">
+    <li><a href="#problem">Problem</a></li>
+    <li><a href="#solution">Solution</a></li>
+    <li><a href="#uvp">Value</a></li>
+    <li><a href="#bmc">Model</a></li>
+    <li><a href="#economics">Economics</a></li>
+    <li><a href="#financials">Financials</a></li>
+    <li><a href="#roadmap">Roadmap</a></li>
+    <li><a href="#hardware">Hardware</a></li>
+  </ul>
+</nav>
+
+<!-- HERO -->
+<div class="hero" id="problem">
+  <div class="hero-ghost">AFRICA</div>
+  <div class="wrap">
+    <p class="hero-eye">// Rugged Odoo POS Terminal — Africa Edition</p>
+    <h1>Three crises.<br><em>One device.</em><br>Zero downtime.</h1>
+    <p class="hero-sub">African retailers are bled by load shedding, disconnected ERPs, and predatory transaction fees. No existing solution solves all three simultaneously — until now.</p>
+    <div class="crisis-row">
+      <div class="crisis-item"><div class="crisis-num">01</div><div class="crisis-title">Grid Failure</div><div class="crisis-desc">Stage 6 load shedding kills conventional POS terminals mid-transaction — no sale, no record, furious customer.</div></div>
+      <div class="crisis-item"><div class="crisis-num">02</div><div class="crisis-title">ERP Disconnect</div><div class="crisis-desc">Legacy hardware has zero native ERP integration. Merchants reconcile manually — wasting hours and introducing errors daily.</div></div>
+      <div class="crisis-item"><div class="crisis-num">03</div><div class="crisis-title">Fee Extraction</div><div class="crisis-desc">Payment processors charge 2.75% per transaction. A merchant processing $50k/month loses $1,375 — every single month.</div></div>
+    </div>
+  </div>
+</div>
+
+<hr class="rule">
+
+<!-- SOLUTION -->
+<div class="wrap"><section id="solution">
+  <div class="lbl">02 / Solution</div>
+  <div class="sol-grid">
+    <div class="sol-text">
+      <h2>Built for Africa.<br><span>Native to Odoo.</span></h2>
+      <p>A rugged, decoupled customer-facing terminal engineered for the African retail environment — load shedding, mobile money, and Odoo-first.</p>
+      <p>An ESP32 microcontroller drives a 2.8" TFT display and NFC reader, powered by an 18650 Li-Ion battery that survives any outage. The Antigravity FastAPI middleware connects everything directly to the merchant's Odoo ERP.</p>
+      <p>No third-party sync. No data loss. No downtime.</p>
+    </div>
+    <div>
+      <div class="arch">
+        <div class="a-layer hw"><span class="a-lbl">Hardware — on-site terminal</span><div class="a-chips"><span class="a-chip">ESP32-WROOM-32E</span><span class="a-chip">ILI9341 TFT</span><span class="a-chip">PN532 NFC</span><span class="a-chip">18650 Li-Ion UPS</span></div></div>
+        <div class="a-arr">↕ HTTPS / WiFi</div>
+        <div class="a-layer mw"><span class="a-lbl">Antigravity — FastAPI · namka.cloud</span><div class="a-chips"><span class="a-chip">Order API</span><span class="a-chip">QR Payments</span><span class="a-chip">Offline Sync</span></div></div>
+        <div class="a-arr">↕ JSON-RPC</div>
+        <div class="a-layer erp"><span class="a-lbl">Odoo ERP backend</span><div class="a-chips"><span class="a-chip">POS Module</span><span class="a-chip">Accounting</span><span class="a-chip">Inventory</span></div></div>
+      </div>
+      <div class="stack-list">
+        <div class="stack-item"><span class="s-tag">Enclosure</span><span class="s-name">Creality K1 Max</span><span class="s-role">PETG/ABS · Pretoria</span></div>
+        <div class="stack-item"><span class="s-tag">PCBA</span><span class="s-name">PCBWay Turnkey</span><span class="s-role">Carrier board assembly</span></div>
+        <div class="stack-item"><span class="s-tag">Payments</span><span class="s-name">SnapScan → M-Pesa</span><span class="s-role">QR · Phase 1 → 2</span></div>
+      </div>
+    </div>
+  </div>
+</section></div>
+
+<hr class="rule">
+
+<!-- UVP -->
+<div class="wrap"><section id="uvp">
+  <div class="lbl">03 / Unique Value Proposition</div>
+  <h2 style="font-size:clamp(2rem,4vw,3rem);font-weight:800;max-width:580px">Three unfair advantages. One device.</h2>
+  <div class="uvp-grid">
+    <div class="uvp-card"><span class="uvp-icon">◈</span><div class="uvp-stat">Advantage 01 · Infrastructure</div><div class="uvp-title">Zero Downtime</div><div class="uvp-desc">Built-in UPS battery and offline-first transaction queue. Stage 6 load shedding never stops a sale. Transactions held locally and synced on reconnect automatically.</div></div>
+    <div class="uvp-card"><span class="uvp-icon">◈</span><div class="uvp-stat">Advantage 02 · Economics</div><div class="uvp-title">1% Flat Fee</div><div class="uvp-desc">Industry charges 2.75%. We charge 1.0%. A merchant processing $50k/month saves $875 every month — $10,500 per year. The TCO calculator closes deals.</div></div>
+    <div class="uvp-card"><span class="uvp-icon">◈</span><div class="uvp-stat">Advantage 03 · Integration</div><div class="uvp-title">Native Odoo</div><div class="uvp-desc">Hardware talks directly to the merchant's Odoo ERP via JSON-RPC. No third-party sync, no manual reconciliation. POS orders appear in real time.</div></div>
+  </div>
+</section></div>
+
+<hr class="rule">
+
+<!-- BMC -->
+<div class="wrap"><section id="bmc">
+  <div class="lbl">04 / Business Model Canvas</div>
+  <h2 style="font-size:clamp(1.8rem,3.5vw,2.6rem);font-weight:800;max-width:440px">How the machine works.</h2>
+  <div class="bmc-grid">
+    <div class="bmc-cell wide"><div class="bmc-lbl">Value Propositions</div><ul class="bmc-ul"><li>Zero downtime through Stage 6 outages</li><li>1% transaction fee vs industry 2.75%</li><li>Native Odoo ERP integration</li><li>Mobile money QR codes (SnapScan, M-Pesa)</li></ul></div>
+    <div class="bmc-cell"><div class="bmc-lbl">Customer Segments</div><ul class="bmc-ul"><li>Franchises >$10k/month volume</li><li>Existing Odoo enterprise clients</li><li>DIS client base (warm pipeline)</li></ul></div>
+    <div class="bmc-cell"><div class="bmc-lbl">Channels</div><ul class="bmc-ul"><li>Direct B2B + TCO Calculator</li><li>DIS partnership (Odoo partner)</li><li>namka.cloud landing page</li></ul></div>
+    <div class="bmc-cell"><div class="bmc-lbl">Key Resources</div><ul class="bmc-ul"><li>Odoo Developer Certification</li><li>Antigravity FastAPI layer</li><li>PCBWay supply chain</li><li>Creality K1 Max · Pretoria</li></ul></div>
+    <div class="bmc-cell wide"><div class="bmc-lbl">Revenue Streams</div><ul class="bmc-ul"><li>$150 upfront hardware sale (immediate cash flow)</li><li>$50/month SaaS fee per terminal (recurring)</li><li>1% flat transaction fee on all payments</li><li>Phase 3: Merchant Cash Advance (MCA)</li></ul></div>
+    <div class="bmc-cell"><div class="bmc-lbl">Cost Structure</div><ul class="bmc-ul"><li>$34 hardware BOM per unit</li><li>PCBWay PCBA manufacturing</li><li>VPS hosting (namka.cloud)</li><li>SARS import clearance</li></ul></div>
+    <div class="bmc-cell"><div class="bmc-lbl">Key Activities</div><ul class="bmc-ul"><li>Antigravity API dev &amp; ops</li><li>Local hardware assembly &amp; QA</li><li>Supply chain management</li><li>Direct B2B outreach</li></ul></div>
+  </div>
+</section></div>
+
+<hr class="rule">
+
+<!-- UNIT ECONOMICS -->
+<div class="wrap"><section id="economics">
+  <div class="lbl">05 / Unit Economics</div>
+  <h2 style="font-size:clamp(1.8rem,3.5vw,2.6rem);font-weight:800;max-width:440px">The numbers per terminal.</h2>
+  <div class="econ-grid">
+    <div class="econ-panel costs">
+      <div class="econ-plbl">↓ Input Costs</div>
+      <div class="econ-row"><span class="econ-lbl">Hardware BOM (components)</span><span class="econ-val">$34</span></div>
+      <div class="econ-row"><span class="econ-lbl">PCBWay PCBA (turnkey)</span><span class="econ-val">TBD</span></div>
+      <div class="econ-row"><span class="econ-lbl">PETG/ABS enclosure (local)</span><span class="econ-val">~$8</span></div>
+      <div class="econ-row"><span class="econ-lbl">Assembly &amp; QA labour</span><span class="econ-val">Variable</span></div>
+      <div class="econ-row"><span class="econ-lbl">VPS hosting (per unit share)</span><span class="econ-val">Marginal</span></div>
+    </div>
+    <div class="econ-panel rev">
+      <div class="econ-plbl">↑ Output Revenue</div>
+      <div class="econ-row"><span class="econ-lbl">Upfront hardware sale</span><span class="econ-val">$150</span></div>
+      <div class="econ-row"><span class="econ-lbl">Monthly SaaS fee</span><span class="econ-val">$50/mo</span></div>
+      <div class="econ-row"><span class="econ-lbl">Transaction fee</span><span class="econ-val">1.0%</span></div>
+      <div class="econ-row"><span class="econ-lbl">Year 1 total per merchant</span><span class="econ-val">$750</span></div>
+      <div class="econ-row"><span class="econ-lbl">Competitor transaction rate</span><span class="econ-val">2.75%</span></div>
+    </div>
+  </div>
+  <div class="payback">
+    <div><div class="pb-lbl">Merchant payback period</div><div class="pb-val">3–4 months</div></div>
+    <div class="pb-desc">A merchant processing $30k/month saves $525/month in fees vs 2.75%. The $750 Year 1 cost pays back in under 4 months — then it's pure savings.</div>
+  </div>
+</section></div>
+
+<hr class="rule">
+
+<!-- FINANCIALS -->
+<div class="wrap"><section id="financials">
+  <div class="lbl">06 / Financial Projections</div>
+  <h2 style="font-size:clamp(1.8rem,3.5vw,2.6rem);font-weight:800;max-width:600px">12-month revenue model — three streams.</h2>
+  <p class="fin-intro">Revenue compounds across hardware sales, SaaS subscriptions, and transaction yield. Modelled on conservative deployment: 3 pilots in Q1 scaling to 50 terminals by month 12, each processing ~$20k/month in volume.</p>
+
+  <div class="fin-table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>Metric</th><th>Q1 (mo 3)</th><th>Q2 (mo 6)</th><th>Q3 (mo 9)</th><th>Q4 (mo 12)</th><th>Year 1 Total</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td>Terminals deployed (cumulative)</td><td>3</td><td>10</td><td>25</td><td>50</td><td>—</td></tr>
+        <tr><td>Hardware revenue ($150/unit)</td><td>$450</td><td>$1,050</td><td>$2,250</td><td>$3,750</td><td class="ta">$7,500</td></tr>
+        <tr><td>SaaS revenue ($50/mo × terminals)</td><td>$450</td><td>$1,500</td><td>$3,750</td><td>$7,500</td><td class="ta">$13,200</td></tr>
+        <tr><td>Transaction fee revenue (1% of vol.)</td><td>$1,800</td><td>$6,000</td><td>$15,000</td><td>$30,000</td><td class="tg">$52,800</td></tr>
+        <tr class="sub"><td>Gross Revenue</td><td>$2,700</td><td>$8,550</td><td>$21,000</td><td>$41,250</td><td class="tg">$73,500</td></tr>
+        <tr><td>Hardware COGS (~$42/unit)</td><td class="tr">–$126</td><td class="tr">–$294</td><td class="tr">–$630</td><td class="tr">–$1,050</td><td class="tr">–$2,100</td></tr>
+        <tr><td>VPS + API running costs (est.)</td><td class="tr">–$150</td><td class="tr">–$150</td><td class="tr">–$200</td><td class="tr">–$250</td><td class="tr">–$750</td></tr>
+        <tr class="tot"><td>Net Operating Revenue</td><td>$2,424</td><td>$8,106</td><td>$20,170</td><td>$39,950</td><td class="tg">$70,650</td></tr>
+        <tr><td>MRR at end of period (SaaS only)</td><td>$150</td><td>$500</td><td>$1,250</td><td>$2,500</td><td>—</td></tr>
+        <tr><td>Monthly txn fee yield (end of period)</td><td>$600</td><td>$2,000</td><td>$5,000</td><td>$10,000</td><td>—</td></tr>
+        <tr class="sub"><td>Combined monthly yield (Q-end)</td><td class="tg">$750</td><td class="tg">$2,500</td><td class="tg">$6,250</td><td class="tg">$12,500</td><td>—</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="fin-charts">
+    <div class="chart-panel">
+      <div class="cp-lbl">Cumulative revenue by stream — Year 1 ($USD)</div>
+      <div class="chart-wrap"><canvas id="cRevenue"></canvas></div>
+    </div>
+    <div class="chart-panel">
+      <div class="cp-lbl">Monthly yield at end of each quarter ($USD/mo)</div>
+      <div class="chart-wrap"><canvas id="cYield"></canvas></div>
+    </div>
+  </div>
+</section></div>
+
+<hr class="rule">
+
+<!-- SUBSCRIPTIONS -->
+<div class="wrap"><section id="subscriptions">
+  <div class="lbl">07 / Subscription Revenue</div>
+  <h2 style="font-size:clamp(1.8rem,3.5vw,2.6rem);font-weight:800;max-width:540px">$50/terminal/month — it compounds fast.</h2>
+  <div class="sub-grid">
+    <div class="sub-card"><div class="sub-ms">Milestone 01 · 90 days</div><div class="sub-n">3</div><div class="sub-nl">Pilot terminals deployed</div><div class="sub-ml">MRR (SaaS only)</div><div class="sub-mrr">$150</div><div class="sub-d">3 paying merchants from DIS client base. Proof-of-concept stage. Transaction yield additional.</div></div>
+    <div class="sub-card hi"><div class="sub-ms">Milestone 02 · 12 months</div><div class="sub-n">10</div><div class="sub-nl">Terminals deployed</div><div class="sub-ml">MRR (SaaS only)</div><div class="sub-mrr">$500</div><div class="sub-d">$500 MRR baseline + 1% on transaction volume. One merchant at $50k/month adds $500 in fees alone.</div></div>
+    <div class="sub-card"><div class="sub-ms">Milestone 03 · Scale</div><div class="sub-n">50</div><div class="sub-nl">Terminals deployed</div><div class="sub-ml">MRR (SaaS only)</div><div class="sub-mrr">$2,500</div><div class="sub-d">$2,500 MRR SaaS floor + transaction yield. Each high-volume terminal worth $1,100+/month at scale.</div></div>
+  </div>
+</section></div>
+
+<hr class="rule">
+
+<!-- ROADMAP -->
+<div class="wrap"><section id="roadmap">
+  <div class="lbl">08 / Roadmap — All Phases</div>
+  <h2 style="font-size:clamp(1.8rem,3.5vw,2.6rem);font-weight:800;max-width:440px">From prototype to embedded finance.</h2>
+  <div class="phases">
+    <div class="phase">
+      <div class="ph-meta"><div class="ph-num">Phase 01</div><div class="ph-name">Prototype &amp; Pilots</div><div class="ph-time">Now — 90 days</div></div>
+      <div class="ph-body"><ul class="ph-items"><li>Antigravity middleware MVP</li><li>Odoo POS + Accounting integration</li><li>SnapScan QR payment</li><li>5-unit prototype run (PCBWay)</li><li>3 pilot merchants — DIS base</li><li>"Hello Odoo" sprint first</li></ul></div>
+    </div>
+    <div class="phase">
+      <div class="ph-meta"><div class="ph-num">Phase 02</div><div class="ph-name">Commercial Launch</div><div class="ph-time">Months 4 – 9</div></div>
+      <div class="ph-body"><ul class="ph-items"><li>M-Pesa SA integration</li><li>50-unit commercial batch</li><li>SARS import clearance</li><li>Expanded B2B outbound sales</li><li>Odoo upgrade strategy</li><li>PSP / acquiring licence</li></ul></div>
+    </div>
+    <div class="phase">
+      <div class="ph-meta"><div class="ph-num">Phase 03</div><div class="ph-name">Embedded Finance</div><div class="ph-time">12+ months</div></div>
+      <div class="ph-body"><ul class="ph-items"><li>Banking-as-a-Service APIs</li><li>Merchant Cash Advance (MCA)</li><li>Next-day wallet settlements</li><li>Transaction data pipeline</li><li>Expanded African market</li><li>Franchise channel scale</li></ul></div>
+    </div>
+  </div>
+</section></div>
+
+<hr class="rule">
+
+<!-- HARDWARE -->
+<div class="wrap"><section id="hardware">
+  <div class="lbl">09 / Hardware — Technical Fabrication</div>
+  <h2 style="font-size:clamp(1.8rem,3.5vw,2.6rem);font-weight:800;max-width:500px">Built in three groups. Assembled locally.</h2>
+  <div class="img-hero">
+    <img src="Gemini_Generated_Image_ibl2exibl2exibl2__1_.png" alt="Rugged Odoo POS Terminal — Technical Fabrication & Assembly Drawings" />
+    <div class="img-cap">
+      <span class="ic-lbl">Technical Fabrication &amp; Assembly Drawings</span>
+      <span class="ic-desc">Designed for local B2B fintech prototyping · Pretoria, South Africa</span>
+    </div>
+  </div>
+  <div class="grp-cards">
+    <div class="grp-card"><div class="grp-tag">Group A · Locally printed</div><div class="grp-title">Enclosure</div><div class="grp-sub">Creality K1 Max · Pretoria</div><ul class="grp-ul"><li>PETG / ABS filament</li><li>Rugged outer shell</li><li>2.8" TFT display cutout</li><li>NFC tap zone aperture</li><li>USB-C pass-through port</li><li>Status LED window</li></ul></div>
+    <div class="grp-card"><div class="grp-tag">Group B · PCBWay PCBA</div><div class="grp-title">Carrier Board</div><div class="grp-sub">PCBWay turnkey assembly</div><ul class="grp-ul"><li>ESP32-WROOM-32E MCU</li><li>TP4056 charging IC + protection</li><li>USB-C connector (power)</li><li>Female modular headers</li><li>Piezo buzzer</li><li>Status RGB LED</li></ul></div>
+    <div class="grp-card"><div class="grp-tag">Group C · Snap-in modules</div><div class="grp-title">Sub-Modules</div><div class="grp-sub">Sourced online · snap-fit</div><ul class="grp-ul"><li>2.8" TFT LCD (ILI9341)</li><li>18650 Li-Ion cell (3.7V ~2500mAh)</li><li>PN532 NFC module</li><li>I2C wiring harness</li></ul></div>
+  </div>
+</section></div>
+
+<hr class="rule">
+
+<footer>
+  <div class="f-brand">RUGGED ODOO POS TERMINAL · <span>AFRICA EDITION</span> · NAMKA.CLOUD</div>
+  <div class="f-note">DESIGNED FOR LOCAL B2B FINTECH · PRETORIA, SOUTH AFRICA</div>
+</footer>
+
+<script>
+const amber='#D4891A',amberLt='#F5C26B',teal='#0A8F72',tealMid='#5CC9A9',red='#C0392B',t2='#4A4640',gc='rgba(0,0,0,0.07)';
+const baseScales={
+  x:{grid:{color:gc},ticks:{font:{family:"'Space Mono',monospace",size:9},color:t2},border:{color:'#CCC8BC'}},
+  y:{grid:{color:gc},ticks:{font:{family:"'Space Mono',monospace",size:9},color:t2,callback:v=>'$'+(v>=1000?(v/1000).toFixed(0)+'k':v)},border:{color:'#CCC8BC'}}
+};
+const baseLegend={position:'bottom',labels:{font:{family:"'Space Mono',monospace",size:10},color:t2,padding:16,boxWidth:12,boxHeight:12}};
+const baseTip={backgroundColor:'#1A1814',titleColor:amberLt,bodyColor:'#ccc',borderColor:'#333',borderWidth:1,titleFont:{family:"'Space Mono',monospace",size:10},bodyFont:{family:"'Inter',sans-serif",size:11},callbacks:{label:c=>' $'+c.raw.toLocaleString()}};
+
+new Chart(document.getElementById('cRevenue'),{
+  type:'bar',
+  data:{
+    labels:['Q1','Q2','Q3','Q4'],
+    datasets:[
+      {label:'Hardware ($150/unit)',data:[450,1050,2250,3750],backgroundColor:'#FEF3DC',borderColor:amber,borderWidth:1.5,borderRadius:3},
+      {label:'SaaS ($50/mo)',data:[450,1500,3750,7500],backgroundColor:'#B5E3D5',borderColor:teal,borderWidth:1.5,borderRadius:3},
+      {label:'Txn fees (1%)',data:[1800,6000,15000,30000],backgroundColor:tealMid,borderColor:'#077A5E',borderWidth:1.5,borderRadius:3}
+    ]
+  },
+  options:{responsive:true,maintainAspectRatio:false,plugins:{legend:baseLegend,tooltip:baseTip},scales:{x:{...baseScales.x,stacked:true},y:{...baseScales.y,stacked:true}}}
+});
+
+new Chart(document.getElementById('cYield'),{
+  type:'line',
+  data:{
+    labels:['Q1','Q2','Q3','Q4'],
+    datasets:[
+      {label:'SaaS MRR',data:[150,500,1250,2500],borderColor:amber,backgroundColor:'rgba(212,137,26,.09)',borderWidth:2,pointBackgroundColor:amber,pointRadius:5,fill:true,tension:.38},
+      {label:'Txn fee yield /mo',data:[600,2000,5000,10000],borderColor:teal,backgroundColor:'rgba(10,143,114,.07)',borderWidth:2,pointBackgroundColor:teal,pointRadius:5,fill:true,tension:.38},
+      {label:'Combined monthly yield',data:[750,2500,6250,12500],borderColor:red,borderWidth:2.5,borderDash:[6,3],pointBackgroundColor:red,pointRadius:5,fill:false,tension:.38}
+    ]
+  },
+  options:{responsive:true,maintainAspectRatio:false,plugins:{legend:baseLegend,tooltip:baseTip},scales:baseScales}
+});
+</script>
+</body>
+</html>
